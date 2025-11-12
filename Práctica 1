@@ -1,0 +1,46 @@
+/*
+Crear un procedimiento llamado “listar_profesores” que tenga un cursor.
+Debemos ir pintando el nombre completo del profesor en mayúsculas y la
+edad. Hacerlo con un bucle LOOP
+
+
+*/
+
+
+delimiter //  
+drop procedure if exists listar_profesores//   -- Elimina el procedimiento si ya existe  
+
+CREATE procedure listar_profesores()
+BEGIN
+ declare fin boolean;                          -- Controla cuándo termina el cursor  
+ declare v_nombre varchar(50);                 -- Guarda el nombre del profesor  
+ declare v_apellidos varchar(50);              -- Guarda los apellidos  
+ declare v_edad int;                           -- Guarda la edad del profesor  
+ declare salida text;                          -- Acumula la salida final  
+
+ declare cursor_profesores cursor for          -- Cursor para recorrer los profesores  
+ select nombre, apellidos, edad
+ from profesores;
+
+ declare continue handler for not found set fin=true;  -- Cuando no hay más filas, fin se vuelve true  
+
+ set salida=' ';                               -- Inicializa la variable de salida vacía  
+ set fin=false;                                -- Se asegura que fin empiece en falso  
+ open cursor_profesores;                       -- Abre el cursor para empezar a recorrer  
+
+ eti1: loop                                    -- Inicio del bucle  
+ fetch cursor_profesores into v_nombre, v_apellidos, v_edad;  -- Obtiene los datos del profesor actual  
+ if fin then                                   -- Si ya no hay más registros...  
+    leave eti1;                                -- ...sale del bucle  
+ end if;
+ set salida = concat(salida,'\n',              -- Va concatenando la información en salida  
+                     upper(concat(v_nombre,' ',v_apellidos)),  -- Nombre completo en mayúsculas  
+                     ' ',v_edad);              -- Y la edad al final  
+ end loop;
+
+ close cursor_profesores;                      -- Cierra el cursor para liberar recursos  
+ select salida;                                -- Muestra la lista final de profesores  
+END//
+
+-- Ejecutar el procedimiento
+call listar_profesores()//                     -- Llama al procedimiento para ver los resultados  
