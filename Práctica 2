@@ -1,0 +1,52 @@
+/*Crear un procedimiento denominado “notas_max_min” que tenga un
+curso que extraiga las notas máximas y mínimas de cada curso. Deben
+poner también el nombre del curso, pero deben extraerlo por fuera del
+cursor. Hacerlo con un bucle WHILE
+*/
+
+delimiter //
+drop procedure if exists notas_max_min//                                                    -- Elimina el procedimiento si existe
+CREATE procedure notas_max_min()                                                            -- Crea el procedimiento
+BEGIN
+ declare fin boolean;                                                                       -- Controla el fin del cursor
+ declare v_nombre varchar(50);                                                              -- Guardará el nombre del curso
+ declare v_cod_curso int;                                                                   -- Guardará el código del curso
+ declare v_nota_max decimal;                                                                -- Nota máxima del curso
+ declare v_nota_min decimal;                                                                -- Nota mínima del curso
+ declare salida text;                                                                       -- Cadena donde acumularemos el resultado
+
+ declare cursor_notas cursor for select                                                     -- Cursor que extrae cod, nota max y min
+cod_curso,max(nota),min(nota) from notas_alumnos group by cod_curso;
+
+ declare continue handler for not found set fin=true;                                       -- Cuando no haya más filas → fin = true
+
+ set salida=' ';                                                                            -- Inicia cadena de salida
+ set fin=false;                                                                             -- Marca que aún no termina
+ open cursor_notas;                                                                         -- Abre el cursor
+
+ eti1: loop                                                                                 -- Inicia el bucle del cursor
+ fetch cursor_notas into v_cod_curso,v_nota_max,v_nota_min;                                -- Obtiene cada fila del cursor
+
+ if fin then                                                                                -- Si no hay más datos...
+ leave eti1;                                                                                -- Sale del bucle
+end if;
+
+ select nombre into v_nombre from cursos where                                              -- Extrae el nombre del curso afuera del cursor
+cod_curso=v_cod_curso;
+
+ set salida=concat(salida,'\n', v_nombre,' ',v_nota_max,'                                   -- Agrega datos formateados a la salida
+',v_nota_min);
+
+ end loop;                                                                                  -- Fin del loop
+ close cursor_notas;                                                                        -- Cierra el cursor
+
+ select salida;                                                                             -- Muestra el resultado final
+END//
+-- Probar el procedimiento
+call notas_max_min()//
+
+
+
+
+
+
